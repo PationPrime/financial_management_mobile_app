@@ -13,6 +13,7 @@ class QueuedAuthInterceptor extends InterceptorsWrapper {
   late final _appLogger = AppLogger(where: '$this');
   final _localStorage = HiveStorage.instance;
   final Dio apiClient;
+  TokenModel? token;
 
   final _requestsNeedRetry = <({
     RequestOptions options,
@@ -95,7 +96,7 @@ class QueuedAuthInterceptor extends InterceptorsWrapper {
       );
 
       _appLogger.logError(
-        "new token:  ${await _localStorage.getToken()}",
+        "new token:  $freshToken",
       );
 
       return Right(freshToken);
@@ -118,7 +119,7 @@ class QueuedAuthInterceptor extends InterceptorsWrapper {
       return handler.next(options);
     }
 
-    final token = await _localStorage.getToken();
+    token = await _localStorage.getToken();
 
     options.headers['Authorization'] = 'Bearer ${token?.accessToken}';
 
@@ -127,6 +128,8 @@ class QueuedAuthInterceptor extends InterceptorsWrapper {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
+    token = await _localStorage.getToken();
+
     _appLogger.logMessage(
       'is refresing: $_isRefreshing',
     );
@@ -136,8 +139,6 @@ class QueuedAuthInterceptor extends InterceptorsWrapper {
     if (!_shouldRefreshToken(err)) {
       handler.next(err);
     } else if (err.requestOptions.path != "/api/v1/auth/refresh_token") {
-      final token = await _localStorage.getToken();
-
       if (token is! TokenModel) {
         _appLogger.logMessage(
           'token not found: $token',
@@ -148,7 +149,14 @@ class QueuedAuthInterceptor extends InterceptorsWrapper {
         );
       }
 
-      if (!_isRefreshing) {
+      if (_isRefreshing) {
+        _requestsNeedRetry.add(
+          (
+            options: response!.requestOptions,
+            handler: handler,
+          ),
+        );
+      } else {
         _isRefreshing = true;
 
         _requestsNeedRetry.add(
@@ -159,7 +167,7 @@ class QueuedAuthInterceptor extends InterceptorsWrapper {
         );
 
         final refreshingResponse = await _refreshToken(
-          token,
+          token!,
           err.requestOptions,
         );
 
@@ -179,15 +187,28 @@ class QueuedAuthInterceptor extends InterceptorsWrapper {
           (token) async {
             await _localStorage.setToken(token);
 
+            print(
+              "_requestsNeedRetry: ${_requestsNeedRetry.length}",
+            );
+
             for (final requestNeedRetry in _requestsNeedRetry) {
+              requestNeedRetry.options.headers['Authorization'] =
+                  'Bearer ${token.accessToken}';
+
+              print(
+                "requestNeedRetry.options.headers: ${requestNeedRetry.options.headers}",
+              );
+
               apiClient
                   .fetch(requestNeedRetry.options)
                   .then(requestNeedRetry.handler.resolve)
                   .catchError(
-                    (resolveError) => _appLogger.logError(
-                      'resolve error: $resolveError',
-                    ),
+                (resolveError) {
+                  _appLogger.logError(
+                    'resolve error: ${(resolveError as DioException).requestOptions.headers}',
                   );
+                },
+              );
             }
 
             _requestsNeedRetry.clear();

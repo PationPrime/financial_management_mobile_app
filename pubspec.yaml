@@ -52,10 +52,10 @@ flutter:
   assets:
     - assets/icons/
     - assets/lang/
-    - assets/logo/
-    - assets/images/
+    # - assets/logo/
+    # - assets/images/
     - assets/fonts/
-    - assets/animations/
+    # - assets/animations/
     - assets/lottie/
   
   fonts:

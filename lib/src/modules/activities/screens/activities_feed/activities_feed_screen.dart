@@ -31,17 +31,17 @@ class _ActivitiesFeedScreenViewState extends State<_ActivitiesFeedScreenView> {
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPersistentFrameCallback(
-    //   (_) {
-        _initialCalls();
-    //   },
-    // );
+    WidgetsBinding.instance.addPersistentFrameCallback(
+      (_) async {
+        await _initialCalls();
+      },
+    );
   }
 
   Future<void> _initialCalls() async {
-    context.read<TestsController>().testCallUserMe();
-    context.read<TestsController>().testCallUserYou();
-    context.read<TestsController>().testCallUserMe();
+    await context.read<TestsController>().testCallUserMe();
+    await context.read<TestsController>().testCallUserYou();
+    await context.read<TestsController>().testCallUserMe();
   }
 
   @override

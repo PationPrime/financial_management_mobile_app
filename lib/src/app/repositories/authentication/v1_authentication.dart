@@ -29,7 +29,7 @@ class V1AuthenticationRepository implements AuthenticationRepositoryInterface {
         data: loginCredentials.toJson(),
       );
 
-      print("${response.data}");
+      log("${response.data}");
 
       return Right(
         TokenModel.fromJson(response.data['token']),

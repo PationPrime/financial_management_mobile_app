@@ -1,5 +1,7 @@
 library src.app.repositories.authentication;
 
+import 'dart:developer';
+
 import 'package:financial_management/src/app/api_client/client.dart';
 import 'package:financial_management/src/app/models/models.dart';
 import 'package:financial_management/src/app/repositories/base_interface.dart';

@@ -8,10 +8,10 @@ environment_config:
       default: develop
     baseUrl:
       type: String
-      default: http://localhost:8081/
+      default: http://192.168.1.107:8081/
     v1RouteUrl:
       type: String
-      default: http://localhost:8081/v1/
+      default: http://192.168.1.107:8081/v1/
     connectTimeout:
       type: int
       default: 30000
