@@ -1,0 +1,23 @@
+environment_config:
+  path: src/app/config/dev_environment_config.dart
+  class: DevelopConfig
+
+  fields:
+    configName:
+      type: String
+      default: develop
+    baseUrl:
+      type: String
+      default: http://localhost:8081/
+    v1RouteUrl:
+      type: String
+      default: http://localhost:8081/v1/
+    connectTimeout:
+      type: int
+      default: 30000
+    receiveTimeout:
+      type: int
+      default: 30000
+    defaultLocale:
+      type: String
+      default: ru_RU
